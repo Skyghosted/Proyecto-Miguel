@@ -14,7 +14,7 @@ export default function Cart({ products, cart, onClose, onRemove, onClear }) {
   const subtotal = lines.reduce((s, l) => s + l.price * l.qty, 0)
 
   function handleCheckout() {
-    alert('Checkout simulado. Gracias por la compra (demo).')
+    alert('Checkout. Gracias por la compra.')
     onClear()
     onClose()
   }

@@ -3,12 +3,8 @@ const PRODUCTS = [
   { id: 'p2', name: 'Sudadera Oversize', price: 44.99, stock: 12, image: '/images/Sudadera.png', sizes: ['M','L','XL'] },
   { id: 'p3', name: 'Pantalón Straight', price: 52.00, stock: 8, image: '/images/Pantalon.png', sizes: ['S','M','L'] },
   { id: 'p4', name: 'Chaqueta Acolchada', price: 79.50, stock: 5, image: '/images/Acolchada.png', sizes: ['M','L','XL'] },
-  { id: 'p5', name: 'Falda Midi', price: 29.99, stock: 14, image: '', sizes: ['S','M'] },
-  { id: 'p6', name: 'Camisa Lino', price: 36.00, stock: 10, image: '', sizes: ['S','M','L'] },
   { id: 'p7', name: 'Gorra Sport', price: 16.50, stock: 30, image: '/images/Gorra.png', sizes: [] },
   { id: 'p8', name: 'Calcetines Pack 3', price: 11.99, stock: 40, image: '/images/Calcetines.png', sizes: [] },
-  { id: 'p9', name: 'Vestido Estampado', price: 54.99, stock: 7, image: '', sizes: ['S','M','L'] },
-  { id: 'p10', name: 'Abrigo Largo', price: 129.00, stock: 3, image: '', sizes: ['M','L','XL'] },
 ]
 
 export default PRODUCTS

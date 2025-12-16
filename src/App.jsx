@@ -122,7 +122,7 @@ useEffect(() => localStorage.setItem(LS_CART_KEY, JSON.stringify(cart)), [cart])
         intensity={1.0}
         rotationSpeed={0.3}
         glowAmount={0.005}
-        pillarWidth={3.0}
+        pillarWidth={4.0}
         pillarHeight={0.4}
         noiseIntensity={0.5}
         pillarRotation={0}
@@ -174,7 +174,7 @@ useEffect(() => localStorage.setItem(LS_CART_KEY, JSON.stringify(cart)), [cart])
         />
       )}
 
-      <footer className="footer">Proyecto de clase — versión demo. Miguel apruebame</footer>
+      <footer className="footer">Proyecto de clase. Miguel apruebame</footer>
       </div>
  
       <ClickSpark />
