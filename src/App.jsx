@@ -6,6 +6,8 @@ import Cart from './components/Cart'
 import ClickSpark from './components/ClickSpark'
 import LightPillar from './components/LightPillar'
 
+console.log('PRODUCTS importado:', PRODUCTS)
+
 const LS_PRODUCTS_KEY = 'tienda_demo_products_v1'
 const LS_CART_KEY = 'tienda_demo_cart_v1'
 
@@ -18,18 +20,28 @@ export default function App() {
   const [sort, setSort] = useState('default')
 
   useEffect(() => {
-    const saved = localStorage.getItem(LS_PRODUCTS_KEY)
-    if (saved) {
-      setProducts(JSON.parse(saved))
-    } else {
-      setProducts(PRODUCTS)
-    }
-    const savedCart = localStorage.getItem(LS_CART_KEY)
-    if (savedCart) setCart(JSON.parse(savedCart))
-  }, [])
+  const saved = localStorage.getItem(LS_PRODUCTS_KEY)
+  if (saved && JSON.parse(saved).length > 0) {  // 👈 Verifica que NO esté vacío
+    setProducts(JSON.parse(saved))
+  } else {
+    setProducts(PRODUCTS)
+  }
+  const savedCart = localStorage.getItem(LS_CART_KEY)
+  if (savedCart) setCart(JSON.parse(savedCart))
+}, [])
 
-  useEffect(() => localStorage.setItem(LS_PRODUCTS_KEY, JSON.stringify(products)), [products])
-  useEffect(() => localStorage.setItem(LS_CART_KEY, JSON.stringify(cart)), [cart])
+// Solo guardar si hay productos (evita guardar array vacío)
+useEffect(() => {
+  if (products.length > 0) {  // 👈 Añade esta condición
+    localStorage.setItem(LS_PRODUCTS_KEY, JSON.stringify(products))
+  }
+}, [products])
+
+useEffect(() => localStorage.setItem(LS_CART_KEY, JSON.stringify(cart)), [cart])
+
+  useEffect(() => {
+    console.log('Products state updated:', products)
+  }, [products])
 
   function openProduct(p) { setSelected(p) }
   function closeModal() { setSelected(null) }
@@ -119,7 +131,7 @@ export default function App() {
       />
       <div className="app">
       <header className="header">
-        <h1>TIenda Bacan Flow</h1>
+        <h1>Tienda Bacan Flow</h1>
         <div className="header-actions">
           <label className="upload-btn">
             Subir imagen (crear producto)
@@ -162,7 +174,7 @@ export default function App() {
         />
       )}
 
-      <footer className="footer">Proyecto de clase — versión demo, sin pasarela real</footer>
+      <footer className="footer">Proyecto de clase — versión demo. Miguel apruebame</footer>
       </div>
  
       <ClickSpark />
