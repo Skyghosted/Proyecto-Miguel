@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tienda demo — versión sin instalación</title>
+  <style>
+    :root{--bg:#f7f7f8;--card:#fff;--muted:#6b7280;--accent:#111827;--primary:#0f172a}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg);color:var(--accent)}
+    .app{max-width:1100px;margin:28px auto;padding:16px}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{font-size:20px;margin:0}
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .upload-btn{background:#fff;border:1px solid #e5e7eb;padding:8px 10px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+    .upload-btn input{display:none}
+    .cart-btn{background:#111827;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
+
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+    .card{background:var(--card);border-radius:8px;overflow:hidden;box-shadow:0 1px 2px rgba(16,24,40,.04);border:1px solid #e6e9ee}
+    .card-media{height:220px;background:#f3f4f6;display:flex;align-items:center;justify-content:center}
+    .card-media img{max-width:100%;max-height:100%;object-fit:cover}
+    .card-body{padding:12px}
+    .card-title{font-size:14px;margin:0 0 8px}
+    .card-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-bottom:12px}
+    .btn{background:transparent;border:1px solid #e5e7eb;padding:7px 10px;border-radius:6px;cursor:pointer}
+    .btn.primary{background:#111827;color:#fff;border:none}
+
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:40}
+    .modal{width:100%;max-width:900px;background:var(--card);border-radius:10px;overflow:hidden}
+    .modal-body{display:flex;flex-wrap:wrap;gap:16px;padding:20px}
+    .modal-image{flex:1 1 320px;display:flex;align-items:center;justify-content:center;background:#fafafa;border-radius:8px;padding:10px}
+    .modal-image img{max-width:100%;max-height:420px;object-fit:contain}
+    .modal-info{flex:1 1 260px}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-bottom:1px solid #eef2f7}
+    .modal-actions{display:flex;gap:8px;margin-top:14px}
+    .field{margin-bottom:10px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type=number],select{width:100%;padding:8px;border-radius:6px;border:1px solid #e6e9ee}
+
+    /* cart */
+    .cart-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.25);display:flex;justify-content:flex-end;z-index:45}
+    .cart{width:360px;background:var(--card);height:100%;display:flex;flex-direction:column}
+    .cart-header{display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid #eef2f7}
+    .cart-body{padding:12px;overflow:auto;flex:1}
+    .cart-item{display:flex;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px dashed #f1f5f9}
+    .cart-item img{width:64px;height:64px;object-fit:cover;border-radius:6px;background:#f3f4f6}
+    .item-info{flex:1}
+    .item-name{font-size:14px}
+    .item-meta{color:var(--muted);font-size:13px}
+    .cart-footer{padding:12px;border-top:1px solid #eef2f7}
+
+    .footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+
+    @media (max-width:640px){.modal-body{flex-direction:column}.modal-image{order:1}.modal-info{order:2}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>Tienda demo — versión sin instalación</h1>
+      <div class="header-actions">
+        <label class="upload-btn">Subir imagen (crear producto)
+          <input id="uploadInput" type="file" accept="image/*">
+        </label>
+        <button id="openCartBtn" class="cart-btn">Carrito (0)</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="grid" class="grid"></section>
+    </main>
+
+    <footer class="footer">Proyecto de clase — demo local (sin pasarela de pago)</footer>
+  </div>
+
+  <script>
+    // --- Datos iniciales ---
+    const LS_PRODUCTS = 'tienda_demo_products_v1'
+    const LS_CART = 'tienda_demo_cart_v1'
+
+    const initialProducts = [
+      { id:'p1', name:'Camiseta básica', price:19.99, stock:10, imgColor:'#d1fae5', image:svgData('Camiseta') , sizes:['S','M','L'] },
+      { id:'p2', name:'Sudadera minimal', price:39.99, stock:5, imgColor:'#fee2e2', image:svgData('Sudadera') , sizes:['M','L'] },
+      { id:'p3', name:'Pantalón denim', price:49.99, stock:7, imgColor:'#e0f2fe', image:svgData('Pantalón') , sizes:['S','M','L'] },
+      { id:'p4', name:'Chaqueta ligera', price:69.99, stock:3, imgColor:'#fef3c7', image:svgData('Chaqueta') , sizes:['M','L','XL'] },
+      { id:'p5', name:'Falda corta', price:29.99, stock:8, imgColor:'#ede9fe', image:svgData('Falda') , sizes:['S','M'] },
+      { id:'p6', name:'Camisa de lino', price:34.99, stock:6, imgColor:'#fff7ed', image:svgData('Camisa') , sizes:['S','M','L'] },
+      { id:'p7', name:'Gorra minimal', price:14.99, stock:12, imgColor:'#f0f9ff', image:svgData('Gorra') , sizes:[] },
+      { id:'p8', name:'Calcetines (pack)', price:9.99, stock:20, imgColor:'#fef2f2', image:svgData('Calcetines') , sizes:[] }
+    ]
+
+    function svgData(text){
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='1000'><rect width='100%' height='100%' fill='%23efefef'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Arial, Helvetica, sans-serif' font-size='40' fill='%23222'>${escapeHtml(text)}</text></svg>`
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
+    }
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>'&#'+c.charCodeAt(0)+';') }
+
+    // --- Estado ---
+    let products = load(LS_PRODUCTS) || initialProducts
+    let cart = load(LS_CART) || []
+
+    const grid = document.getElementById('grid')
+    const openCartBtn = document.getElementById('openCartBtn')
+    const uploadInput = document.getElementById('uploadInput')
+
+    function save(key, data){ localStorage.setItem(key, JSON.stringify(data)) }
+    function load(key){ try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : null }catch(e){return null} }
+
+    function render(){
+      grid.innerHTML = ''
+      products.forEach(p => grid.appendChild(cardFor(p)))
+      updateCartCount()
+      save(LS_PRODUCTS, products)
+      save(LS_CART, cart)
+    }
+
+    function cardFor(p){
+      const el = document.createElement('article')
+      el.className = 'card'
+      el.innerHTML = `
+        <div class="card-media"><img src="${p.image}" alt="${p.name}"></div>
+        <div class="card-body">
+          <h3 class="card-title">${p.name}</h3>
+          <div class="card-meta"><span class="price">€${p.price.toFixed(2)}</span><span class="stock">${p.stock} en stock</span></div>
+          <div class="card-actions"><button class="btn" data-id="${p.id}">Ver</button></div>
+        </div>`
+      el.querySelector('button').addEventListener('click', ()=> openModal(p.id))
+      return el
+    }
+
+    // Modal
+    let modalEl = null
+    function openModal(id){
+      const p = products.find(x=>x.id===id)
+      if(!p) return
+      modalEl = document.createElement('div')
+      modalEl.className = 'modal-backdrop'
+      modalEl.innerHTML = `<div class="modal">
+        <header class="modal-header"><h2>${p.name}</h2><button class="btn close">✕</button></header>
+        <div class="modal-body">
+          <div class="modal-image"><img src="${p.image}" alt="${p.name}"></div>
+          <div class="modal-info">
+            <p class="price">€${p.price.toFixed(2)}</p>
+            <p class="stock">${p.stock} en stock</p>
+            <div class="field" id="sizesField"></div>
+            <div class="field"><label>Cantidad</label><input id="qtyInput" type="number" min="1" max="${p.stock}" value="1"></div>
+            <div class="modal-actions"><button class="btn primary" id="addBtn">Añadir al carrito</button><button class="btn" id="cancelBtn">Cancelar</button></div>
+          </div>
+        </div>
+      </div>`
+
+      document.body.appendChild(modalEl)
+      modalEl.addEventListener('click', (e)=>{ if(e.target===modalEl) closeModal() })
+      modalEl.querySelector('.close').addEventListener('click', closeModal)
+      modalEl.querySelector('#cancelBtn').addEventListener('click', closeModal)
+
+      // sizes
+      const sizesField = modalEl.querySelector('#sizesField')
+      if(p.sizes && p.sizes.length>0){
+        const sel = document.createElement('select'); sel.id='sizeSelect'
+        p.sizes.forEach(s=> sel.appendChild(new Option(s,s)))
+        sizesField.innerHTML = '<label>Talla</label>'
+        sizesField.appendChild(sel)
+      }
+
+      modalEl.querySelector('#addBtn').addEventListener('click', ()=>{
+        const qty = Math.max(1, Math.min(Number(document.getElementById('qtyInput').value)||1, p.stock))
+        const size = modalEl.querySelector('#sizeSelect') ? modalEl.querySelector('#sizeSelect').value : ''
+        addToCart(p.id, qty, size)
+      })
+    }
+    function closeModal(){ if(modalEl){ modalEl.remove(); modalEl=null } }
+
+    // Cart
+    let cartEl = null
+    function openCart(){
+      if(cartEl) return
+      cartEl = document.createElement('div')
+      cartEl.className = 'cart-backdrop'
+      cartEl.innerHTML = `<aside class="cart">
+        <header class="cart-header"><h3>Carrito</h3><button class="btn close">✕</button></header>
+        <div class="cart-body"></div>
+        <footer class="cart-footer">
+          <div class="subtotal"></div>
+          <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="clearBtn">Vaciar</button><button class="btn primary" id="checkoutBtn">Pagar (simulado)</button></div>
+        </footer>
+      </aside>`
+
+      document.body.appendChild(cartEl)
+      cartEl.querySelector('.close').addEventListener('click', closeCart)
+      cartEl.addEventListener('click', (e)=>{ if(e.target===cartEl) closeCart() })
+      cartEl.querySelector('#clearBtn').addEventListener('click', clearCart)
+      cartEl.querySelector('#checkoutBtn').addEventListener('click', ()=>{ alert('Checkout simulado — gracias.'); clearCart(); closeCart() })
+      renderCartBody()
+    }
+    function closeCart(){ if(cartEl){ cartEl.remove(); cartEl=null } }
+
+    function renderCartBody(){
+      if(!cartEl) return
+      const body = cartEl.querySelector('.cart-body')
+      body.innerHTML = ''
+      const lines = cart.map((it,idx)=>{
+        const p = products.find(x=>x.id===it.productId) || {name:'[eliminado]', price:0, image:''}
+        const row = document.createElement('div'); row.className='cart-item'
+        row.innerHTML = `<img src="${p.image}" alt="${p.name}"><div class="item-info"><div class="item-name">${p.name}${it.size?(' ('+it.size+')'):''}</div><div class="item-meta">${it.qty} × €${p.price.toFixed(2)}</div></div><div class="item-actions"><button class="btn removeBtn" data-idx="${idx}">Eliminar</button></div>`
+        row.querySelector('.removeBtn').addEventListener('click', ()=> removeFromCart(idx))
+        body.appendChild(row)
+      })
+      const subtotal = cart.reduce((s,it)=>{
+        const p = products.find(x=>x.id===it.productId) || {price:0}
+        return s + (p.price || 0)*it.qty
+      },0)
+      cartEl.querySelector('.subtotal').innerHTML = 'Subtotal: <strong>€'+subtotal.toFixed(2)+'</strong>'
+    }
+
+    function updateCartCount(){
+      const count = cart.reduce((s,it)=>s+it.qty,0)
+      openCartBtn.textContent = `Carrito (${count})`
+      if(cartEl) renderCartBody()
+    }
+
+    // Actions
+    function addToCart(productId, qty, size){
+      const p = products.find(x=>x.id===productId)
+      if(!p) return alert('Producto no encontrado')
+      if(p.stock < qty) return alert('No hay suficiente stock')
+      p.stock -= qty
+      const existing = cart.find(i=>i.productId===productId && i.size===size)
+      if(existing) existing.qty += qty
+      else cart.push({productId, qty, size})
+      save(LS_PRODUCTS, products); save(LS_CART, cart)
+      render(); closeModal(); openCart()
+    }
+
+    function removeFromCart(index){
+      const item = cart[index]
+      if(!item) return
+      const p = products.find(x=>x.id===item.productId)
+      if(p) p.stock += item.qty
+      cart.splice(index,1)
+      save(LS_PRODUCTS, products); save(LS_CART, cart)
+      render(); renderCartBody(); updateCartCount()
+    }
+
+    function clearCart(){
+      cart.forEach(it=>{
+        const p = products.find(x=>x.id===it.productId)
+        if(p) p.stock += it.qty
+      })
+      cart = []
+      save(LS_PRODUCTS, products); save(LS_CART, cart)
+      render(); if(cartEl) renderCartBody()
+    }
+
+    // Upload image -> create product
+    uploadInput.addEventListener('change', (e)=>{
+      const file = e.target.files && e.target.files[0]
+      if(!file) return
+      const reader = new FileReader()
+      reader.onload = ()=>{
+        const newP = { id:'p_'+Date.now(), name:'Nuevo producto', price:29.99, stock:5, image:reader.result, sizes:['S','M','L'] }
+        products.unshift(newP)
+        save(LS_PRODUCTS, products)
+        render()
+      }
+      reader.readAsDataURL(file)
+      uploadInput.value = ''
+    })
+
+    // events
+    openCartBtn.addEventListener('click', ()=>{ openCart() })
+
+    // inicializar
+    render()
+
+    // Expose small helper for debugging (optional)
+    window.__tienda = { products, cart, render }
+  </script>
+</body>
+</html>
