@@ -4,7 +4,11 @@ export default function ProductCard({ product, onOpen }) {
   return (
     <article className="card">
       <div className="card-media" onClick={onOpen} style={{cursor:'pointer'}}>
-        <img src={product.image} alt={product.name} />
+        {product.image ? (
+          <img src={product.image} alt={product.name} />
+        ) : (
+          <div className="placeholder">Imagen pendiente</div>
+        )}
       </div>
       <div className="card-body">
         <h3 className="card-title">{product.name}</h3>

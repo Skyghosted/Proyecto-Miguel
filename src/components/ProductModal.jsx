@@ -18,7 +18,11 @@ export default function ProductModal({ product, onClose, onAdd }) {
         </header>
         <div className="modal-body">
           <div className="modal-image">
-            <img src={product.image} alt={product.name} />
+            {product.image ? (
+              <img src={product.image} alt={product.name} />
+            ) : (
+              <div className="placeholder large">Imagen pendiente</div>
+            )}
           </div>
           <div className="modal-info">
             <p className="price">€{product.price.toFixed(2)}</p>

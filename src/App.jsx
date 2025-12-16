@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import PRODUCTS from './data/products'
 import ProductCard from './components/ProductCard'
 import ProductModal from './components/ProductModal'
@@ -12,6 +12,8 @@ export default function App() {
   const [selected, setSelected] = useState(null)
   const [cart, setCart] = useState([])
   const [showCart, setShowCart] = useState(false)
+  const [query, setQuery] = useState('')
+  const [sort, setSort] = useState('default')
 
   useEffect(() => {
     const saved = localStorage.getItem(LS_PRODUCTS_KEY)
@@ -84,6 +86,18 @@ export default function App() {
     reader.readAsDataURL(file)
   }
 
+  const visibleProducts = useMemo(() => {
+    let list = products.slice()
+    if (query.trim()) {
+      const q = query.trim().toLowerCase()
+      list = list.filter(p => p.name.toLowerCase().includes(q))
+    }
+    if (sort === 'price_asc') list.sort((a,b)=>a.price-b.price)
+    if (sort === 'price_desc') list.sort((a,b)=>b.price-a.price)
+    if (sort === 'stock_desc') list.sort((a,b)=>b.stock-a.stock)
+    return list
+  }, [products, query, sort])
+
   return (
     <div className="app">
       <header className="header">
@@ -98,8 +112,19 @@ export default function App() {
       </header>
 
       <main className="container">
+        <div className="toolbar">
+          <input className="search" placeholder="Buscar productos..." value={query} onChange={e=>setQuery(e.target.value)} />
+          <select className="sort" value={sort} onChange={e=>setSort(e.target.value)}>
+            <option value="default">Orden: recomendado</option>
+            <option value="price_asc">Precio: más barato</option>
+            <option value="price_desc">Precio: más caro</option>
+            <option value="stock_desc">Stock: más disponible</option>
+          </select>
+        </div>
+
         <section className="grid">
-          {products.map(p => (
+          {visibleProducts.length === 0 && <p className="empty">No hay productos que coincidan.</p>}
+          {visibleProducts.map(p => (
             <ProductCard key={p.id} product={p} onOpen={() => openProduct(p)} />
           ))}
         </section>
