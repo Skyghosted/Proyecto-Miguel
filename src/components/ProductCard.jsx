@@ -3,11 +3,11 @@ import React from 'react'
 export default function ProductCard({ product, onOpen }) {
   return (
     <article className="card">
-      <div className="card-media" onClick={onOpen} style={{cursor:'pointer'}}>
+      <div className="card-media" style={{cursor:'pointer'}}>
         {product.image ? (
-          <img src={product.image} alt={product.name} />
+          <img src={product.image} alt={product.name} onClick={onOpen} />
         ) : (
-          <div className="placeholder">Imagen pendiente</div>
+          <div className="placeholder" onClick={onOpen}>Imagen pendiente</div>
         )}
       </div>
       <div className="card-body">

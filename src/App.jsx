@@ -3,6 +3,8 @@ import PRODUCTS from './data/products'
 import ProductCard from './components/ProductCard'
 import ProductModal from './components/ProductModal'
 import Cart from './components/Cart'
+import ClickSpark from './components/ClickSpark'
+import LightPillar from './components/LightPillar'
 
 const LS_PRODUCTS_KEY = 'tienda_demo_products_v1'
 const LS_CART_KEY = 'tienda_demo_cart_v1'
@@ -98,10 +100,26 @@ export default function App() {
     return list
   }, [products, query, sort])
 
+ 
+
   return (
-    <div className="app">
+    <>
+      <LightPillar
+        topColor="#5227FF"
+        bottomColor="#FF9FFC"
+        intensity={1.0}
+        rotationSpeed={0.3}
+        glowAmount={0.005}
+        pillarWidth={3.0}
+        pillarHeight={0.4}
+        noiseIntensity={0.5}
+        pillarRotation={0}
+        interactive={false}
+        mixBlendMode="screen"
+      />
+      <div className="app">
       <header className="header">
-        <h1>Tienda demo — Miguel</h1>
+        <h1>TIenda Bacan Flow</h1>
         <div className="header-actions">
           <label className="upload-btn">
             Subir imagen (crear producto)
@@ -145,6 +163,9 @@ export default function App() {
       )}
 
       <footer className="footer">Proyecto de clase — versión demo, sin pasarela real</footer>
-    </div>
+      </div>
+ 
+      <ClickSpark />
+    </>
   )
 }
